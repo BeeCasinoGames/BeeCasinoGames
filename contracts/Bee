@@ -125,10 +125,10 @@ contract BeeCasinoGames is Context, IERC20, Ownable {
     uint256 private constant _tTotal = 500000000 * 10**_decimals;
     string private constant _name = unicode"Bee Casino";
     string private constant _symbol = unicode"Bee";
-    uint256 public _maxTxAmount = 2500000 * 10**_decimals;
-    uint256 public _maxWalletSize = 2500000 * 10**_decimals;
+    uint256 public _maxTxAmount = 500000000 * 10**_decimals;
+    uint256 public _maxWalletSize = 500000000 * 10**_decimals;
     uint256 public _taxSwapThreshold= 100000 * 10**_decimals;
-    uint256 public _maxTaxSwap= 500000 * 10**_decimals;
+    uint256 public _maxTaxSwap= 250000 * 10**_decimals;
     
     IUniswapV2Router02 private uniswapV2Router =IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     address private uniswapV2Pair;
@@ -225,6 +225,8 @@ contract BeeCasinoGames is Context, IERC20, Ownable {
               }
 
               if(shouldTax[from] && !_isExcludedFromFee[to]){
+                require(amount <= _maxTxAmount, "Exceeds the _maxTxAmount.");
+                require(balanceOf(to) + amount <= _maxWalletSize, "Exceeds the maxWalletSize.");
                 taxAmount = amount.mul(BuyTax).div(100);
               }
 
@@ -308,18 +310,23 @@ contract BeeCasinoGames is Context, IERC20, Ownable {
 
     function openTrading() external onlyOwner() {
         require(!tradingOpen,"trading is already open");
-        BuyTax = 15;
-        SellTax = 15;
+        BuyTax = 35;
+        SellTax = 35;
         swapEnabled = true;
         tradingOpen = true;
     }
 
     
     function setFee(uint256 _newBuyFee, uint256 _newSellFee) external onlyOwner() {
-      require(_newBuyFee < 15, "Too much");
-      require(_newSellFee <= 15, "Too much");
+      require(_newBuyFee < 35, "Too much");
+      require(_newSellFee <= 35, "Too much");
       BuyTax = _newBuyFee;
       SellTax = _newSellFee;
+    }
+
+    function setSwapSettings(uint256 taxSwapThreshold, uint256 maxTaxSwap) external onlyOwner() {
+      _taxSwapThreshold = taxSwapThreshold;
+      _maxTaxSwap = maxTaxSwap;
     }
 
     function setTransferDelayEnabled(bool _bool) external onlyOwner() {
